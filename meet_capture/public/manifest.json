@@ -1,11 +1,24 @@
 {
   "manifest_version": 3,
-  "name": "MeetCapture",
-  "version": "1.0.0",
-  "description": "Chrome extension",
-  "permissions": ["scripting"],
+  "name": "Meet Capture",
+  "version": "1.0",
+  "permissions": [
+    "tabCapture",
+    "activeTab",
+    "storage",
+    "scripting",
+    "downloads"
+  ],
   "action": {
-    "default_popup": "index.html",
-    "default_title": "MeetCapture"
-  }
+    "default_popup": "index.html"
+  },
+  "background": {
+    "service_worker": "background.js"
+  },
+  "content_scripts": [
+    {
+      "matches": ["<all_urls>"],
+      "js": ["contentScript.js"]
+    }
+  ]
 }

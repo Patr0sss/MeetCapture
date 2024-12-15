@@ -1,17 +1,17 @@
-import reactLogo from "./assets/react.svg";
+import { useState } from "react";
 import "./App.css";
+import Homepage from "./pages/homepage/homepage";
+import LoginPage from "./pages/loginpage/Loginpage";
 
-function App() {
+export default function App() {
+  const [currentPage, setCurrentPage] = useState<"login" | "home">("login");
+
   return (
     <div>
-      <a href="https://react.dev" target="_blank">
-        <img src={reactLogo} className="logo react" alt="React logo" />
-      </a>
-      <h1>Welcome to MeetCapture</h1>
-
-      <button>Start Recording</button>
+      {currentPage === "login" && (
+        <LoginPage onLogin={() => setCurrentPage("home")} />
+      )}
+      {currentPage === "home" && <Homepage />}
     </div>
   );
 }
-
-export default App;
