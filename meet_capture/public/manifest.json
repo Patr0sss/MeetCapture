@@ -7,7 +7,14 @@
     "activeTab",
     "storage",
     "scripting",
-    "downloads"
+    "downloads",
+    "offscreen"
+  ],
+  "web_accessible_resources": [
+    {
+      "resources": ["offscreen.html"],
+      "matches": ["<all_urls>"]
+    }
   ],
   "action": {
     "default_popup": "index.html"
