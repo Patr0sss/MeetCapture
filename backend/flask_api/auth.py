@@ -3,7 +3,7 @@ from datetime import datetime, timedelta
 from pymongo import MongoClient
 from . import db
 import hashlib
-from flask_jwt_extended import create_access_token, create_refresh_token
+from flask_jwt_extended import create_access_token, create_refresh_token, unset_jwt_cookies
 
 auth = Blueprint('auth', __name__)
 
@@ -17,14 +17,12 @@ def login():
     if user_from_db:
         encrypted_password = hashlib.sha256(login_details['password'].encode('utf-8')).hexdigest()
         if encrypted_password == user_from_db['password']:
-            access_token = create_access_token(identity=user_from_db['email'])
-            refresh_token = create_refresh_token(identity=user_from_db['email'])
+            access_token = create_access_token(identity=user_from_db['email'], expires_delta= timedelta(hours=2))
             return jsonify(
                 {
                 "message":"Logged In",
                 "tokens": {
-                    "access": access_token,
-                    "refresh": refresh_token
+                    "access": access_token
                 }
                 }), 200
     
@@ -33,9 +31,11 @@ def login():
 
 
 
-@auth.route('/logout')
+@auth.route('/logout', methods=['POST'])
 def logout():
-    pass
+    response = jsonify({'msg':'logout succesful'}) 
+    unset_jwt_cookies(response)
+    return response,200
 
 
 @auth.route('/register',methods=['POST'])
@@ -48,5 +48,3 @@ def register():
         return jsonify({'msg': 'User created successfully'}), 201
     else:
         return jsonify({'msg':'User already exists'}), 409
-
-    
