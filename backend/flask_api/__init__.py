@@ -1,4 +1,5 @@
 from flask import Flask
+
 from pymongo import MongoClient
 import json
 from flask_jwt_extended import JWTManager
