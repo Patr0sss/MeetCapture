@@ -2,9 +2,13 @@ import { useEffect, useState } from "react";
 import "./App.css";
 import Homepage from "./pages/homepage/homepage";
 import LoginPage from "./pages/loginpage/Loginpage";
+import Registerpage from "./pages/registerpage/Registerpage";
+
+export type Page = "register" | "login" | "home";
 
 export default function App() {
-  const [currentPage, setCurrentPage] = useState<"login" | "home">("login");
+  const [currentPage, setCurrentPage] = useState<Page>("login");
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
 
   const checkIsRecoring = async () => {
     const isRec = await chrome.storage.local.get("isRecording");
@@ -16,23 +20,32 @@ export default function App() {
   useEffect(() => {
     checkIsRecoring();
     const checkIsLoggedIn = async () => {
-      const isLoggedIn = await chrome.storage.local.get("isLoggedIn");
-      if (isLoggedIn.isLoggedIn) {
+      if (localStorage.getItem("access_token")) {
+        setIsLoggedIn(true);
         setCurrentPage("home");
+        console.log(isLoggedIn);
       }
     };
     checkIsLoggedIn();
   }, []);
 
-  const handleLogin = async () => {
-    setCurrentPage("home");
-    await chrome.storage.local.set({ isLoggedIn: true });
-  };
-
   return (
     <div>
-      {currentPage === "login" && <LoginPage onLogin={() => handleLogin()} />}
-      {currentPage === "home" && <Homepage />}
+      {currentPage === "login" && (
+        <LoginPage
+          setCurrentPage={setCurrentPage}
+          setIsLoggedIn={setIsLoggedIn}
+        />
+      )}
+      {currentPage === "home" && (
+        <Homepage
+          setCurrentPage={setCurrentPage}
+          setIsLoggedIn={setIsLoggedIn}
+        />
+      )}
+      {currentPage === "register" && (
+        <Registerpage setCurrentPage={setCurrentPage} />
+      )}
     </div>
   );
 }

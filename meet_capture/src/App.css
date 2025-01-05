@@ -7,10 +7,15 @@
 
 .mainMenu {
   width: 250px;
-  height: 200px;
+  height: 300px;
   display: flex;
   flex-direction: column;
   justify-content: center;
   align-items: center;
   background-color: #f3f4f6;
+  gap: 15px;
+}
+
+.errorMessage {
+  color: red;
 }

@@ -1,15 +1,13 @@
 import "../../App.css";
 import axios from "axios";
-import { Page } from "../../App";
 import { Dispatch, SetStateAction, useState } from "react";
+import { Page } from "../../App";
 import TextField from "@mui/material/TextField";
 import Button from "@mui/material/Button";
 
 export default function Loginpage({
-  setIsLoggedIn,
   setCurrentPage,
 }: {
-  setIsLoggedIn: Dispatch<SetStateAction<boolean>>;
   setCurrentPage: Dispatch<SetStateAction<Page>>;
 }) {
   const [user, setUser] = useState({
@@ -19,10 +17,21 @@ export default function Loginpage({
 
   const [error, setError] = useState("");
 
-  const loginUser = async () => {
+  const validateEmail = (): boolean => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(user.email);
+  };
+
+  const isEmailValid = validateEmail();
+  const registerUser = async () => {
+    if (!isEmailValid || user.password.length < 6) {
+      setError("Invalid email or password");
+      return;
+    }
+
     try {
       const res = await axios.post(
-        "http://127.0.0.1:5000/login",
+        "http://127.0.0.1:5000/register",
         {
           email: user.email,
           password: user.password,
@@ -34,20 +43,15 @@ export default function Loginpage({
           withCredentials: true,
         }
       );
-
-      if (res.status === 200) {
-        setIsLoggedIn(true);
-        setCurrentPage("home");
-        localStorage.setItem("access_token", res.data.tokens.access);
-        return;
+      if (res.status === 201) {
+        setError("");
+        setCurrentPage("login");
       }
-      // setError("Invalid email or password");
     } catch (err) {
       console.log(err);
-      setIsLoggedIn(false);
-      setError("Invalid email or password");
     }
   };
+
   return (
     <div className="mainMenu">
       {error ? <h2 className="errorMessage">{error}</h2> : <h2>Welcome</h2>}
@@ -69,15 +73,12 @@ export default function Loginpage({
         }
       />
 
-      <Button onClick={loginUser} variant="contained">
-        Login
+      <Button onClick={registerUser} variant="contained">
+        Register
       </Button>
 
-      <p
-        onClick={() => setCurrentPage("register")}
-        style={{ cursor: "pointer" }}
-      >
-        Register
+      <p onClick={() => setCurrentPage("login")} style={{ cursor: "pointer" }}>
+        Login
       </p>
     </div>
   );

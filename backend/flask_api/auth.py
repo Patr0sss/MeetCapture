@@ -42,6 +42,7 @@ def logout():
 @auth.route('/register',methods=['POST'])
 def register():
     new_user = request.get_json()
+
     if new_user['password'] and new_user['email']:
         email_regex = re.compile('^[\w\-\.]+@([\w-]+\.)+[\w-]{2,4}$')
 
