@@ -1,0 +1,1 @@
+{"root":["./src/app.tsx","./src/background.ts","./src/contentscript.ts","./src/main.tsx","./src/offscreenscript.ts","./src/timercontext.tsx","./src/vite-env.d.ts","./src/context/timercontext.tsx","./src/pages/homepage/homepage.tsx","./src/pages/loginpage/loginpage.tsx","./src/pages/registerpage/registerpage.tsx"],"errors":true,"version":"5.7.2"}
