@@ -1,3 +1,62 @@
+import axios from 'axios';
+
+// generate current time 
+const operation = {
+  now: () => Math.floor(Date.now() / 1000)
+};
+
+// startTimer used only once to initialize timer in chrome storage
+const startTimer = async () => {
+  console.log("Start timer");
+  // Initialize timer in chrome storage
+  await chrome.storage.local.set({
+    timestamps: [],
+  });
+
+};
+startTimer();
+
+/**
+ * @param seconds 
+ * @returns string
+ */
+// convert seconds to HH:MM:SS
+const formatTime = (seconds: number) => {
+  const hours = Math.floor(seconds / 3600); 
+  const minutes = Math.floor((seconds % 3600) / 60); 
+  const remainingSeconds = Math.floor(seconds % 60); 
+
+  // format as HH:MM:SS
+  return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(remainingSeconds).padStart(2, '0')}`;
+};
+
+const resetTimer = async () => { 
+  console.log("Reset timer");
+  await chrome.storage.local.set({
+    timestamps: [],
+  });
+}
+
+const addTimestamp = async () => {
+  console.log("Add timestamp");
+
+  const state = await chrome.storage.local.get(["time", "timestamps", "firstTimestamp"]);
+  const newTimeInMilliseconds = operation.now() - state.firstTimestamp;
+  const formattedTime = formatTime(newTimeInMilliseconds);
+  await chrome.storage.local.set({
+    timestamps: [...state.timestamps, formattedTime], 
+  });
+
+  console.log("Timestamp added:", formattedTime);
+};
+
+// debugging function
+const showCurrentTimestamps = async () => {
+  const state = await chrome.storage.local.get(["timestamps"]);
+  console.log("Timestamps: ", state.timestamps);  
+}
+
+
 // check
 const fetchRecordingState = async () => {
   const isRecording = await chrome.storage.local.get("isRecording");
@@ -15,18 +74,21 @@ const updateRecording = async (state: boolean, type: any) => {
 const startRecording = async (type: string) => {
   console.log("start recording", type);
   const currentState = await fetchRecordingState();
-  console.log("current state", currentState);
+  console.log("current state", currentState); 
   updateRecording(true, type);
   recordTabState(true);
-  await chrome.storage.local.set({ isRecording: true });
+  // when recording starts, set first timestamp as current time and isSendingTimestampAllowed declared to false
+  await chrome.storage.local.set({ isRecording: true,isSendingTimestampAllowed: false, firstTimestamp: operation.now() });
 };
 
 const stopRecording = async () => {
-  console.log("stop recording");
+  console.log("stop recording"); 
   updateRecording(false, "");
   recordTabState(false);
-  await chrome.storage.local.set({ isRecording: false });
+  // when recording stops, set isSendingTimestampAllowed declared to true
+  await chrome.storage.local.set({ isRecording: false, isSendingTimestampAllowed: true });
 };
+
 
 const recordTabState = async (start = true) => {
   const existingContexts = await chrome.runtime.getContexts({});
@@ -44,7 +106,7 @@ const recordTabState = async (start = true) => {
   if (start) {
     const tab = await chrome.tabs.query({ active: true, currentWindow: true });
     if (!tab) {
-      console.log("NO TAB");
+      console.log("NO TAB"); 
       return;
     }
 
@@ -73,9 +135,66 @@ const recordTabState = async (start = true) => {
   }
 };
 
+// timestamp send to backend
+const sendTimestamps = async () => {
+  console.log("Sending Timestamps...");
+  showCurrentTimestamps();
+
+  // fetch timestamps from storage
+  const state = await chrome.storage.local.get(["timestamps"]);
+  console.log("Fetched from storage:", state.timestamps);
+
+  // check if timestamps exist
+  if (!state.timestamps) {
+    console.error("No timestamps found in storage.");
+    return;
+  }
+
+  // send data
+  axios
+    .post("http://127.0.0.1:5000/timestamps", state.timestamps)
+    .then((response) => {
+      console.log(`Timestamps sent: ${JSON.stringify(response.data)}`);
+      resetTimer();
+    })
+    .catch((error) => {
+      console.error(`Error in Axios request: ${error}`);
+    });
+};
+
+// listening for keyboard shortcut usage
+chrome.commands.onCommand.addListener((command) => {
+  console.log("Test command", command);
+  if (command === "takeScreenshot") {
+    console.log("take screenshot");
+    addTimestamp();
+    showCurrentTimestamps();
+  }
+});
+
+// detecting if state in chrome.storage.local changes
+
+interface StorageChange {
+  [key: string]: chrome.storage.StorageChange;
+}
+const handleStorageChange = (changes: StorageChange, areaName: string) => {
+  console.log("Storage change detected:", changes, "Area:", areaName);
+
+  if (areaName === "local" && changes.isSendingTimestampAllowed) {
+    const newValue = changes.isSendingTimestampAllowed.newValue;
+    console.log("New value for isSendingTimestampAllowed:", newValue);
+
+    if (newValue === true) {
+      sendTimestamps();
+    }
+  }
+};
+
+chrome.storage.onChanged.addListener(handleStorageChange);
+
 // add listeners for messages
 chrome.runtime.onMessage.addListener((request, sender) => {
-  console.log("message received", sender);
+  console.log("message received", sender); 
   switch (request.type) {
     case "startRecording":
       startRecording(request.recordingType);
