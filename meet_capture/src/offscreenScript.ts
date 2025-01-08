@@ -97,6 +97,16 @@ async function startRecording(streamId: string) {
       a.click();
       URL.revokeObjectURL(url);
       data = [];
+
+      if (combinedStream) {
+        combinedStream.getTracks().forEach((track) => track.stop());
+      }
+      if (tabStream) {
+        tabStream.getTracks().forEach((track) => track.stop());
+      }
+      if (microphone) {
+        microphone.getTracks().forEach((track) => track.stop());
+      }
     };
 
     // start recording
