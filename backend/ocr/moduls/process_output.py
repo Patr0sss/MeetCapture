@@ -1,25 +1,26 @@
-import io
-import re
-import os
-import markdown
-import base64
-from weasyprint import HTML
-from PIL import Image
-
-def image_to_base64(image_path):
-    # Convert an image to a base64-encoded string.
-    with open(image_path, "rb") as img_file:
-        image = Image.open(img_file)
-        width, height = image.size
-        new_width = int(width * 0.5)
-        new_height = int(height * 0.5)
-        scaled_image = image.resize((new_width, new_height))
-        img_byte_arr = io.BytesIO()
-        scaled_image.save(img_byte_arr, format="PNG")
-        img_byte_arr.seek(0)
-        return base64.b64encode(img_byte_arr.read()).decode("utf-8")
-
 def process_markdown(md_file, images_folder, output_pdf, max_width=600):
+    import io
+    import re
+    import os
+    import markdown
+    import base64
+    from weasyprint import HTML
+    from PIL import Image
+
+    def image_to_base64(image_path):
+        # Convert an image to a base64-encoded string.
+        with open(image_path, "rb") as img_file:
+            image = Image.open(img_file)
+            width, height = image.size
+            new_width = int(width * 0.5)
+            new_height = int(height * 0.5)
+            scaled_image = image.resize((new_width, new_height))
+            img_byte_arr = io.BytesIO()
+            scaled_image.save(img_byte_arr, format="PNG")
+            img_byte_arr.seek(0)
+            return base64.b64encode(img_byte_arr.read()).decode("utf-8")
+
+
     # open markdown file
     with open(md_file, 'r', encoding='utf-8') as f:
         markdown_content = f.read()
