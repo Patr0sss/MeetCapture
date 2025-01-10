@@ -1,4 +1,4 @@
-import axios from 'axios';
+// import axios from 'axios';
 
 // generate current time 
 const operation = {
@@ -30,12 +30,12 @@ const formatTime = (seconds: number) => {
   return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(remainingSeconds).padStart(2, '0')}`;
 };
 
-const resetTimer = async () => { 
-  console.log("Reset timer");
-  await chrome.storage.local.set({
-    timestamps: [],
-  });
-}
+// const resetTimer = async () => { 
+//   console.log("Reset timer");
+//   await chrome.storage.local.set({
+//     timestamps: [],
+//   });
+// }
 
 const addTimestamp = async () => {
   console.log("Add timestamp");
@@ -135,33 +135,6 @@ const recordTabState = async (start = true) => {
   }
 };
 
-// timestamp send to backend
-const sendTimestamps = async () => {
-  console.log("Sending Timestamps...");
-  showCurrentTimestamps();
-
-  // fetch timestamps from storage
-  const state = await chrome.storage.local.get(["timestamps"]);
-  console.log("Fetched from storage:", state.timestamps);
-
-  // check if timestamps exist
-  if (!state.timestamps) {
-    console.error("No timestamps found in storage.");
-    return;
-  }
-
-  // send data
-  axios
-    .post("http://127.0.0.1:5000/timestamps", state.timestamps)
-    .then((response) => {
-      console.log(`Timestamps sent: ${JSON.stringify(response.data)}`);
-      resetTimer();
-    })
-    .catch((error) => {
-      console.error(`Error in Axios request: ${error}`);
-    });
-};
-
 // listening for keyboard shortcut usage
 chrome.commands.onCommand.addListener((command) => {
   console.log("Test command", command);
@@ -183,14 +156,28 @@ const handleStorageChange = (changes: StorageChange, areaName: string) => {
   if (areaName === "local" && changes.isSendingTimestampAllowed) {
     const newValue = changes.isSendingTimestampAllowed.newValue;
     console.log("New value for isSendingTimestampAllowed:", newValue);
-
-    if (newValue === true) {
-      sendTimestamps();
-    }
   }
 };
 
 chrome.storage.onChanged.addListener(handleStorageChange);
+
+// listeners to work with offscreen script
+// not able to use storage from offscreen
+chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
+  if (message.action === "fetchTimestamps") {
+    chrome.storage.local.get(["timestamps"], (result) => {
+      sendResponse({ timestamps: result.timestamps || [] });
+    });
+    return true; 
+  }
+
+  if (message.action === "resetTimestamps") {
+    chrome.storage.local.set({ timestamps: [] }, () => {
+      sendResponse({ success: true });
+    });
+    return true; 
+  }
+});
 
 // add listeners for messages
 chrome.runtime.onMessage.addListener((request, sender) => {
