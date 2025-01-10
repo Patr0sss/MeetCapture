@@ -22,6 +22,12 @@ def process_markdown(md_file, images_folder, output_pdf, max_width=600):
 
 
     # open markdown file
+    # check if file exists
+    if not os.path.exists(md_file):
+        # create empty notes.md
+        with open(md_file, 'w', encoding='utf-8') as f:
+            f.write("")
+        
     with open(md_file, 'r', encoding='utf-8') as f:
         markdown_content = f.read()
     print(f"Original Markdown Content:\n{markdown_content}\n")
@@ -48,14 +54,15 @@ def process_markdown(md_file, images_folder, output_pdf, max_width=600):
         else:
             print(f"Image not found: {image_path}")  
     
-    print(f"\nModified Markdown Content with Images:\n{markdown_content}\n")
+    #print(f"\nModified Markdown Content with Images:\n{markdown_content}\n")
 
     # converting Markdown to HTML
     html_content = markdown.markdown(markdown_content)
     
-    print(f"Generated HTML Content:\n{html_content}\n")
+    # print(f"Generated HTML Content:\n{html_content}\n")
 
     # generate PDF
+    # must be connected with database and sent !!!
     try:
         HTML(string=html_content).write_pdf(output_pdf)
         print(f"PDF saved as {output_pdf}")
