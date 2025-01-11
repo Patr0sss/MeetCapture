@@ -2,6 +2,8 @@ from flask import Blueprint, json, request, jsonify, send_file
 from flask_cors import CORS
 from flask_api.ocr.ocr_run import ocr_run
 from flask_api.ocr.moduls import process_output
+from flask_api.transcript.whisperx_transcript import speech_to_text
+import moviepy.editor as mp
 import subprocess
 import os
 
@@ -32,9 +34,20 @@ def process_video():
     # Save the uploaded video
     video_path = os.path.join(UPLOAD_FOLDER, 'recording.mp4')
     video.save(video_path)
+
+    #video_to_compress = mp.VideoFileClip(video_path)
+    #video_to_compress.audio.write_audiofile(os.path.join(UPLOAD_FOLDER,"audio.mp3"))
+    #audio_path = os.path.join(UPLOAD_FOLDER, 'audio.mp3')
     
+
+    text = speech_to_text(video_path)
+
+    with open('text.md', 'a', encoding='utf-8') as f:
+        for segment in text["segments"]:
+            f.write(f"\n{segment['start']}-{segment['end']} {segment['speaker']}: {segment['text']}\n")
+
+
     # for every timestamp, run the OCR
-    
     for timestamp in timestamps:
         try:
             ocr_run(timestamp, video_path)
@@ -42,6 +55,7 @@ def process_video():
             return jsonify({'error': f'Error processing timestamp {timestamp}: {str(e)}'}), 500
 
 
+        
     # use ready markdown file to create pdf
     process_output.process_markdown(
         md_file='notes.md',  
