@@ -3,8 +3,9 @@ import "./App.css";
 import Homepage from "./pages/homepage/homepage";
 import LoginPage from "./pages/loginpage/Loginpage";
 import Registerpage from "./pages/registerpage/Registerpage";
+import ReportPage from "./pages/reportPage/reportpage";
 
-export type Page = "register" | "login" | "home";
+export type Page = "register" | "login" | "home" | "reports";
 
 export default function App() {
   const [currentPage, setCurrentPage] = useState<Page>("login");
@@ -45,6 +46,9 @@ export default function App() {
       )}
       {currentPage === "register" && (
         <Registerpage setCurrentPage={setCurrentPage} />
+      )}
+      {currentPage === "reports" && (
+        <ReportPage setCurrentPage={setCurrentPage} />
       )}
     </div>
   );

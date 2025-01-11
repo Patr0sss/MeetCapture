@@ -82,23 +82,30 @@ export default function Homepage({
   return (
     <div className="mainMenu">
       <h2>Meet Capture</h2>
-      <div>
-        <Button
-          onClick={() => updateRecording("startRecording")}
-          variant="contained"
-        >
-          {state.isRecording ? "Stop Recording" : "Start Recording"}
-        </Button>
+      <Button
+        onClick={() => updateRecording("startRecording")}
+        variant="contained"
+        style={{ width: "75%" }}
+      >
+        {state.isRecording ? "Stop Recording" : "Start Recording"}
+      </Button>
 
-        <Button
-          onClick={logoutUser}
-          variant="outlined"
-          color="error"
-          style={{ marginTop: "20px" }}
-        >
-          Logout
-        </Button>
-      </div>
+      <Button
+        onClick={() => setCurrentPage("reports")}
+        variant="contained"
+        style={{ marginTop: "10px", width: "75%" }}
+      >
+        Reports
+      </Button>
+
+      <Button
+        onClick={logoutUser}
+        variant="outlined"
+        color="error"
+        style={{ marginTop: "10px" }}
+      >
+        Logout
+      </Button>
     </div>
   );
 }
