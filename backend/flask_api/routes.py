@@ -1,6 +1,6 @@
 from flask import Blueprint, json, request, jsonify, send_file
 from flask_cors import CORS
-from flask_api.ocr import ocr_run
+from flask_api.ocr.ocr_run import ocr_run
 from flask_api.ocr.moduls import process_output
 import subprocess
 import os
@@ -34,15 +34,16 @@ def process_video():
     video.save(video_path)
     
     # for every timestamp, run the OCR
+    
     for timestamp in timestamps:
         try:
-            ocr_run.run_ocr(timestamp, video_path)
+            ocr_run(timestamp, video_path)
         except Exception as e:
             return jsonify({'error': f'Error processing timestamp {timestamp}: {str(e)}'}), 500
 
 
     # use ready markdown file to create pdf
-    process_markdown(
+    process_output.process_markdown(
         md_file='notes.md',  
         images_folder='',         
         output_pdf='output.pdf', 

@@ -1,4 +1,4 @@
-def run_ocr(timestamp,video_file):
+def ocr_run(timestamp,video_file):
     from .moduls.screenshot_capture import capture_screenshot
     from .moduls.crop_based_model import crop_based_on_model
     from .moduls.process_image import process_image

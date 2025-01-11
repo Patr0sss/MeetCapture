@@ -6,7 +6,6 @@ with open("config.json", 'r') as file:
     data = json.load(file)
     secret = data["secret"]
 
-print(secret)
 device = "cuda" 
 audio_file = "audio.mp3"
 batch_size = 8 # reduce if low on GPU mem
@@ -45,8 +44,4 @@ diarize_segments = diarize_model(audio)
 # diarize_model(audio, min_speakers=min_speakers, max_speakers=max_speakers)
 
 result = whisperx.assign_word_speakers(diarize_segments, result)
-print(diarize_segments)
-print(result["segments"]) # segments are now assigned speaker IDs
-print("========")
-for r in result["segments"]:
-    print(r['speaker']+":"+r['text'])
+
