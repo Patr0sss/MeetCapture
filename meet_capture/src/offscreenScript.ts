@@ -24,19 +24,19 @@ chrome.runtime.onMessage.addListener((request, sender) => {
   }
 });
 
-  // Reset timestamps via messaging
-  const resetTimer = async () => {
-    return new Promise((resolve, reject) => {
-      chrome.runtime.sendMessage({ action: "resetTimestamps" }, (response) => {
-        if (chrome.runtime.lastError) {
-          reject(chrome.runtime.lastError);
-        } else {
-          console.log("Timestamps reset");
-          resolve(response);
-        }
-      });
+// Reset timestamps via messaging
+const resetTimer = async () => {
+  return new Promise((resolve, reject) => {
+    chrome.runtime.sendMessage({ action: "resetTimestamps" }, (response) => {
+      if (chrome.runtime.lastError) {
+        reject(chrome.runtime.lastError);
+      } else {
+        console.log("Timestamps reset");
+        resolve(response);
+      }
     });
-  };
+  });
+};
 
 let recorder: MediaRecorder | undefined;
 let data: Blob[] = [];
@@ -49,7 +49,6 @@ async function stopRecording() {
 }
 
 async function startRecording(streamId: string) {
-
   try {
     // Clear previous recording data
     data.length = 0;
@@ -92,26 +91,29 @@ async function startRecording(streamId: string) {
     ]);
 
     recorder = new MediaRecorder(combinedStream, {
-      mimeType: "video/mp4",
+      mimeType: "video/mp4; codecs=avc1,mp4a.40.2",
       videoBitsPerSecond: 5000000,
     });
 
     //listen for data
     recorder.ondataavailable = (event) => {
-      console.log("Data available to read: ", event.data)
+      console.log("Data available to read: ", event.data);
       data.push(event.data);
     };
 
     // sen
     const fetchReadyTimestamps = async () => {
       return new Promise((resolve, reject) => {
-        chrome.runtime.sendMessage({ action: "fetchTimestamps" }, (response) => {
-          if (chrome.runtime.lastError) {
-            reject(chrome.runtime.lastError);
-          } else {
-            resolve(response.timestamps || []);
+        chrome.runtime.sendMessage(
+          { action: "fetchTimestamps" },
+          (response) => {
+            if (chrome.runtime.lastError) {
+              reject(chrome.runtime.lastError);
+            } else {
+              resolve(response.timestamps || []);
+            }
           }
-        });
+        );
       });
     };
 
@@ -119,19 +121,21 @@ async function startRecording(streamId: string) {
     recorder.onstop = async () => {
       console.log("Recording stopped.");
       const blob = new Blob(data, { type: "video/mp4" });
-    
+
       const formData = new FormData();
-      formData.append("video", blob, "recording17.mp4");
+      formData.append("video", blob, "recording.mp4");
       console.log("Blob type:", blob.type);
-    
+
       try {
-        const state = await fetchReadyTimestamps() as { timestamps: string[] };
+        const state = (await fetchReadyTimestamps()) as {
+          timestamps: string[];
+        };
         formData.append("timestamps", JSON.stringify(state));
       } catch (err) {
         console.error("Error fetching timestamps:", err);
-        return; 
+        return;
       }
-    
+
       try {
         const response = await fetch("http://127.0.0.1:5000/process-video", {
           method: "POST",
@@ -142,16 +146,15 @@ async function startRecording(streamId: string) {
       } catch (err) {
         console.error("Error uploading video:", err);
       }
-    
+
       // Save locally and cleanup
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url;
-      a.download = `recording17.mp4`;
+      a.download = `recording.mp4`;
       a.click();
       URL.revokeObjectURL(url);
       data = [];
-    
 
       if (combinedStream) {
         combinedStream.getTracks().forEach((track) => track.stop());
