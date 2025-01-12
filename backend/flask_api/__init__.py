@@ -39,11 +39,9 @@ def configure_app(app):
 def configure_blueprints(app):
     from . import auth
     from . import routes
-    from ocr.routes_ocr import ocr_bp
 
     app.register_blueprint(auth.auth)
     app.register_blueprint(routes.routes)
-    app.register_blueprint(ocr_bp, url_prefix='/ocr') 
     
 
 
