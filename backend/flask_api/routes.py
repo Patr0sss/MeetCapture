@@ -3,7 +3,6 @@ from flask_cors import CORS
 from flask_api.ocr.ocr_run import ocr_run
 from flask_api.ocr.moduls import process_output
 from flask_api.transcript.whisperx_transcript import speech_to_text
-import moviepy.editor as mp
 import subprocess
 import os
 
@@ -44,7 +43,7 @@ def process_video():
 
     with open('text.md', 'a', encoding='utf-8') as f:
         for segment in text["segments"]:
-            f.write(f"\n{segment['start']}-{segment['end']} {segment['speaker']}: {segment['text']}\n")
+            f.write(f"{segment['start']}-{segment['end']} {segment['speaker']}: {segment['text']}\n")
 
 
     # for every timestamp, run the OCR
