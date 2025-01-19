@@ -1,4 +1,4 @@
-def process_markdown(md_file, images_folder, output_pdf, max_width=600):
+def process_markdown(md_file, images_folder, output_pdf, max_width=1200):
     import io
     import re
     import os
@@ -33,7 +33,7 @@ def process_markdown(md_file, images_folder, output_pdf, max_width=600):
     print(f"Original Markdown Content:\n{markdown_content}\n")
 
     # search for places where screenshots should be stored
-    pattern = r"Information about (ocr/croped_photos/.+?): .+?"
+    pattern = r"Information about (flask_api/ocr/croped_photos/.+?): .+?"
     matches = re.findall(pattern, markdown_content)
     
     print(f"Matches found for image paths: {matches}")

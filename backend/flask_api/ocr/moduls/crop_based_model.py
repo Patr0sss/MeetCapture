@@ -22,7 +22,7 @@ def crop_based_on_model(image_name,output_folder):
 
     # load images
     try:
-        image_path = f'ocr/photos/{image_name}'
+        image_path = f'flask_api/ocr/photos/{image_name}'
         with open(image_path, "rb") as f:
             response = requests.post(
                 url,
@@ -62,14 +62,14 @@ def crop_based_on_model(image_name,output_folder):
             logger.error(f"Failed to crop and save image: {image_path}")
 
     # decide which approach to use depending on the model's prediction threshold
-    if "shared_area" in prepared_map and prepared_map["shared_area"][0][0] > 0.75:
+    if "shared_area" in prepared_map and prepared_map["shared_area"][0][0] > 0.4:
         logger.debug(f"Started cropping image {image_name} with option ONLY_SHARED")
         shared_area = max(prepared_map["shared_area"], key=lambda x: x[0])
         confidence, bbox = shared_area
         crop_image(image_path, bbox, output_path=f"{output_folder}/{image_name[:-4]}_cropped.png")
     else:
         logger.debug(f"Started cropping image {image_name} with option EVERYTHING_EXCEPT_SHARED")
-        image = Image.open(f'ocr/photos/{image_name}')
+        image = Image.open(f'flask_api/ocr/photos/{image_name}')
 
         # all possible classes
         ui_classes = ["participants_sidebar", "participants_topbar", "toolbar", "teams_window"]
