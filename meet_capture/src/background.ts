@@ -143,6 +143,7 @@ chrome.commands.onCommand.addListener((command) => {
     addTimestamp();
     showCurrentTimestamps();
   }
+  
 });
 
 // detecting if state in chrome.storage.local changes
@@ -176,6 +177,12 @@ chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
       sendResponse({ success: true });
     });
     return true; 
+  }
+  
+  if (message.action === 'setProcessing') {
+    chrome.storage.local.set({ isProcessing: message.isProcessing }, () => {
+      console.log('isProcessing ustawiony na:', message.isProcessing);
+    });
   }
 });
 
