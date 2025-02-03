@@ -137,13 +137,17 @@ async function startRecording(streamId: string) {
       }
 
       try {
+        chrome.runtime.sendMessage({ action: 'setProcessing', isProcessing: true });
+        console.log("isProcessing set to true");
         const response = await fetch("http://127.0.0.1:5000/process-video", {
           method: "POST",
           body: formData,
         });
         const result = await response.json();
         console.log("Server response:", result);
+        chrome.runtime.sendMessage({ action: 'setProcessing', isProcessing: false });
       } catch (err) {
+        chrome.runtime.sendMessage({ action: 'setProcessing', isProcessing: false });
         console.error("Error uploading video:", err);
       }
 
