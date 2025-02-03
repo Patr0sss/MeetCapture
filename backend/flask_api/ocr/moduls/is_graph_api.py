@@ -1,4 +1,4 @@
-def is_graph(text):
+def is_graph(input_image):
     import os
     import logging
     from groq import Groq
@@ -22,16 +22,23 @@ def is_graph(text):
     except:
         logger.error("Failed to load client and API key")
 
-    chat_completion = client.chat.completions.create(
-        messages=[
-            {
-                "role": "user",
-                "content": f"{prompt}: {text}"
-
-
-            }
-        ],
-        model="llama3-8b-8192",
-    )
-    logger.debug("Loaded function is_graph")
-    return chat_completion.choices[0].message.content
+    try:
+        completion = client.chat.completions.create(
+            model="llama-3.2-90b-vision-preview",
+            messages=[
+                {
+                    "role": "user",
+                    "content": f"Should this content be represented graphically? Please answer only 'True' or 'False'. Image URL: {input_image}"
+                }
+            ],
+            temperature=1,
+            max_completion_tokens=1024,
+            top_p=1,
+            stream=False,
+            stop=None,
+        )
+        logger.info("API request successful.")
+    except Exception as e:
+        logger.error(f"Error during API request: {e}")
+        return None
+    return completion.choices[0].message.content
