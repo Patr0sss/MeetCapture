@@ -3,11 +3,16 @@ import Button from "@mui/material/Button";
 import "../../App.css";
 import { Page } from "../../App";
 import axios from "axios";
+import './homepage.css';
 
 interface AudioState {
   isRecording: boolean;
   audioBlob: Blob | null;
   error: string | null;
+}
+
+interface StorageChange {
+  [key: string]: chrome.storage.StorageChange;
 }
 
 export default function Homepage({
@@ -22,6 +27,8 @@ export default function Homepage({
     audioBlob: null,
     error: null,
   });
+
+  const [isProcessingData,setIsProcessingData] = useState<boolean>(false);
 
   useEffect(() => {
     fetchRecordingState();
@@ -79,13 +86,39 @@ export default function Homepage({
       console.log(err);
     }
   };
+
+
+  useEffect(() => { 
+    chrome.storage.local.get("isProcessing", (result) => {
+      if (result.isProcessing !== undefined) {
+        setIsProcessingData(result.isProcessing);
+      }
+    });
+  
+    const handleStorageChange = (changes: StorageChange, areaName: string) => {
+      if (areaName === "local" && changes.isProcessing) {
+        setIsProcessingData(changes.isProcessing.newValue);
+      }
+    };
+  
+    chrome.storage.onChanged.addListener(handleStorageChange);
+  
+    return () => {
+      chrome.storage.onChanged.removeListener(handleStorageChange);
+    };
+  }, []);
+
+
+
   return (
     <div className="mainMenu">
       <h2>Meet Capture</h2>
       <Button
+        className={isProcessingData ? "blocked" : "not-blocked"}
         onClick={() => updateRecording("startRecording")}
         variant="contained"
         style={{ width: "75%" }}
+        disabled={isProcessingData}
       >
         {state.isRecording ? "Stop Recording" : "Start Recording"}
       </Button>
