@@ -19,15 +19,15 @@ def ocr_run(timestamp,video_file,dic_ocr = {}):
     # crop image to text area based on model
         crop_based_on_model(f'{name_of_file}','flask_api/ocr/croped_photos')
         status_code_CROP_BASED_ON_MODEL = 200
-        logger.info(f"Use of CROP_BASED_ON_MODEL function with status: {status_code_CROP_BASED_ON_MODEL}")
+        # logger.info(f"Use of CROP_BASED_ON_MODEL function with status: {status_code_CROP_BASED_ON_MODEL}")
     except:
         logger.error(f"Error while croping image on image: {name_of_file}")
     if status_code_CROP_BASED_ON_MODEL == 200:
-        logger.debug(f"Starting PROCESS_IMAGE function on file: {name_of_file}")
+        # logger.debug(f"Starting PROCESS_IMAGE function on file: {name_of_file}")
         # using OCR on image, correcting text, deciding if image should be showed graphically and saving it to markdown file
         is_graph,text = process_image(f"flask_api/ocr/croped_photos/{name_of_file[:-4]}_cropped.png",timestamp)
         dic_ocr[timestamp] = text
     else:
         logger.error("Use of CROP_BASED_ON_MODEL function went wrong")
     
-    return dic_ocr
+    return is_graph,text
