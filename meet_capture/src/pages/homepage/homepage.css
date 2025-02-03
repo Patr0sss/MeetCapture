@@ -1,0 +1,9 @@
+.blocked{
+    cursor: not-allowed;
+    background-color:rgb(103, 103, 103);
+}
+
+.not-blocked{
+    cursor: pointer;
+    background-color:rgb(0, 21, 255);
+}
