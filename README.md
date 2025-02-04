@@ -8,6 +8,7 @@ Jest to program do nagrania spotkania i przygotowania  raportu pdf z tranksrypcj
 Aby zbuildować frontend - wtyczkę do przeglądarki google chrome należy mieć zainstalowany yarn i wykonać następujące polecenie:
 
 ```bash
+yarn
 yarn build
 ```
 
