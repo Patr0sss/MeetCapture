@@ -28,11 +28,10 @@ def is_graph(input_image):
             messages=[
                 {
                     "role": "user",
-                    "content": f"Should this content be represented graphically? Please answer only 'True' or 'False'. Image URL: {input_image}"
+                    "content": f"Does the image contain complex visual information that would be difficult to convey through text alone? Answer only 'True' or 'False'. Image URL: {input_image}"
                 }
             ],
             temperature=1,
-            max_completion_tokens=1024,
             top_p=1,
             stream=False,
             stop=None,

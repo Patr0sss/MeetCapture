@@ -17,7 +17,7 @@ def process_image(input_image,timestamp):
 
     parser = LlamaParse(
         result_type="markdown",
-        premium_mode="true"
+        # premium_mode="true"
         )
     file_extractor = {".png": parser}
 
@@ -27,7 +27,7 @@ def process_image(input_image,timestamp):
     logger.debug(f"Original OCR: {text}")
     # improving text from ocr
     result_after_correction = correct_text(text)
-    # logger.debug(f"OCR result: {result_after_correction}")
+    logger.debug(f"OCR result: {result_after_correction}")
     # checking if screenshot should be presented as image
     is_graph_result = is_graph(input_image)
     logger.debug(f"Graphicall result: {is_graph_result}")

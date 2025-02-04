@@ -184,6 +184,19 @@ chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
       console.log('isProcessing ustawiony na:', message.isProcessing);
     });
   }
+
+  if (message.action === "fetchEventData") {
+    chrome.storage.local.get(["selectedEventId", "creatorEmail","googleAuthToken"], (result) => {
+      sendResponse({ 
+        eventId: result.selectedEventId,
+        creatorEmail: result.creatorEmail,
+        googleAuthToken: result.googleAuthToken
+      });
+    });
+    return true; 
+  }
+
+
 });
 
 // add listeners for messages

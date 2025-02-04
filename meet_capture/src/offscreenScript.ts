@@ -117,6 +117,24 @@ async function startRecording(streamId: string) {
       });
     };
 
+    const fetchEventData = async () => {
+      return new Promise<{ eventId: string | undefined, creatorEmail: string | undefined, googleAuthToken: string | undefined }>((resolve, reject) => {
+        chrome.runtime.sendMessage({ action: "fetchEventData" }, (response) => {
+          if (chrome.runtime.lastError) {
+            reject(chrome.runtime.lastError);
+          } else {
+            resolve({
+              eventId: response.eventId,
+              creatorEmail: response.creatorEmail,
+              googleAuthToken: response.googleAuthToken
+            });
+          }
+        });
+      });
+    };
+
+    
+
     //listen for when revording stops
     recorder.onstop = async () => {
       console.log("Recording stopped.");
@@ -127,9 +145,8 @@ async function startRecording(streamId: string) {
       console.log("Blob type:", blob.type);
 
       try {
-        const state = (await fetchReadyTimestamps()) as {
-          timestamps: string[];
-        };
+        // Fetch timestamps
+        const state = (await fetchReadyTimestamps()) as { timestamps: string[] };
         formData.append("timestamps", JSON.stringify(state));
       } catch (err) {
         console.error("Error fetching timestamps:", err);
@@ -137,19 +154,48 @@ async function startRecording(streamId: string) {
       }
 
       try {
-        chrome.runtime.sendMessage({ action: 'setProcessing', isProcessing: true });
-        console.log("isProcessing set to true");
-        const response = await fetch("http://127.0.0.1:5000/process-video", {
-          method: "POST",
-          body: formData,
-        });
-        const result = await response.json();
-        console.log("Server response:", result);
-        chrome.runtime.sendMessage({ action: 'setProcessing', isProcessing: false });
+        // Fetch eventId and creatorEmail from the background script
+        const { eventId, creatorEmail, googleAuthToken } = await fetchEventData();
+      
+        if (!eventId || !creatorEmail || !googleAuthToken) {
+          console.error("Event ID or creator email not found.");
+          return;
+        }
+      
+
+        // Append eventId and creatorEmail to the formData
+        formData.append("eventId", eventId);
+        formData.append("creatorEmail", creatorEmail);
+        formData.append("googleAuthToken", googleAuthToken);
+        
+      }catch (err) {
+        console.error("Error fetching eventData:", err);
+        return;
+      }
+
+      try {
+
+          chrome.runtime.sendMessage({ action: 'setProcessing', isProcessing: true });
+          console.log("isProcessing set to true");
+
+          fetch("http://127.0.0.1:5000/process-video", {
+            method: "POST",
+            body: formData,
+          })
+            .then((response) => response.json())
+            .then((result) => {
+              console.log("Server response:", result);
+              chrome.runtime.sendMessage({ action: 'setProcessing', isProcessing: false });
+            })
+            .catch((err) => {
+              chrome.runtime.sendMessage({ action: 'setProcessing', isProcessing: false });
+              console.error("Error uploading video:", err);
+            });
       } catch (err) {
         chrome.runtime.sendMessage({ action: 'setProcessing', isProcessing: false });
         console.error("Error uploading video:", err);
       }
+
 
       // Save locally and cleanup
       const url = URL.createObjectURL(blob);

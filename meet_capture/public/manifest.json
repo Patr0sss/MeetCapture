@@ -8,7 +8,8 @@
     "storage",
     "scripting",
     "downloads",
-    "offscreen"
+    "offscreen",
+    "identity"
   ],
   "commands": {
     "takeScreenshot": {
@@ -32,6 +33,15 @@
     "service_worker": "background.js",
     "type": "module"
   },
+  "oauth2": {
+        "client_id": "184641325702-kmnfseu4ha0jq0r2vo8rascbrujsosuq.apps.googleusercontent.com",
+        "scopes": [
+              "https://www.googleapis.com/auth/calendar",
+              "https://www.googleapis.com/auth/userinfo.profile",
+              "https://www.googleapis.com/auth/userinfo.email",
+              "https://www.googleapis.com/auth/gmail.send"
+          ]
+    },
   "content_scripts": [
     {
       "matches": ["<all_urls>"],

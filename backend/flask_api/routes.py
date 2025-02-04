@@ -1,8 +1,16 @@
+import base64
+from googleapiclient.discovery import build
+from email.mime.multipart import MIMEMultipart
+from email.mime.text import MIMEText
+from email.mime.base import MIMEBase
+from email import encoders
 from concurrent.futures import ThreadPoolExecutor, as_completed
 import queue
 import threading
 from flask import Blueprint, json, request, jsonify, send_file
 from flask_cors import CORS
+from google.oauth2.credentials import Credentials
+import requests
 from flask_api.ocr.ocr_run import ocr_run
 from flask_api.ocr.moduls import process_output
 from flask_api.transcript.whisperx_transcript import speech_to_text
@@ -10,6 +18,7 @@ from .utils.sort_text import sorting_timestamps
 from .utils.clear_photos_folder import clear_photos_folder
 from .utils.clear_croped_photos_folder import clear_croped_photos_folder
 from .utils.calculate_workers import calculate_workers
+from .utils.create_email import create_email
 from datetime import datetime
 import subprocess
 import os
@@ -20,9 +29,15 @@ routes = Blueprint('routes', __name__)
 UPLOAD_FOLDER = "uploaded_videos"
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
+def validate_token(token):
+    response = requests.get(f'https://www.googleapis.com/oauth2/v1/tokeninfo?access_token={token}')
+    if response.status_code == 200:
+        return response.json()
+    else:
+        return None
+
 def process_timestamp(timestamp, video_path):
     try:
-        # Simulate OCR processing
         is_graph_result, text = ocr_run(timestamp, video_path, {})
         return timestamp, (is_graph_result, text)
     except Exception as e:
@@ -37,6 +52,9 @@ def process_video():
     
     # Check if timestamps were fetched
     timestamps = request.form.get('timestamps')
+    event_id = request.form.get('eventId')
+    email = request.form.get('creatorEmail')
+    token = request.form.get('googleAuthToken')
     if not timestamps:
         return jsonify({'error': 'Timestamps not provided'}), 400
     
@@ -110,6 +128,40 @@ def process_video():
         images_folder='',         
         output_pdf=f'outputs/Report_{str(formatted_date_time)}.pdf'  
     )
+
+    try:
+        # Validate the token
+        token_info = validate_token(token)
+        if not token_info:
+            return jsonify({'error': 'Invalid or expired token'}), 401
+
+        creds = Credentials(token=token, scopes=['https://www.googleapis.com/auth/calendar.readonly', 'https://www.googleapis.com/auth/gmail.send'])
+
+        calendar_service = build('calendar', 'v3', credentials=creds)
+
+        event = calendar_service.events().get(calendarId='primary', eventId=event_id).execute()
+        attendees = event.get('attendees', [])
+        to_emails = [attendee['email'] for attendee in attendees if 'email' in attendee]
+
+        if not to_emails:
+            return jsonify({'error': 'No attendees found for the event'}), 400
+
+        gmail_service = build('gmail', 'v1', credentials=creds)
+
+        subject = f"Meeting Notes for {event.get('summary', 'Event')}"
+        body = f"Please find attached the meeting notes for the event: {event.get('summary', 'Event')}\n\n{event.get('description', '')}"
+        email = create_email(to_emails, subject, body, f'outputs/Report_{str(formatted_date_time)}.pdf')
+        raw_email = base64.urlsafe_b64encode(email.as_bytes()).decode('utf-8')
+
+        result = gmail_service.users().messages().send(
+            userId='me',
+            body={'raw': raw_email}
+        ).execute()
+
+        print('Emails sent successfully:', result)
+
+    except Exception as e:
+        return jsonify({'error': 'Failed to send emails', 'details': str(e)}), 500
 
     # Clear folders
     clear_photos_folder()
