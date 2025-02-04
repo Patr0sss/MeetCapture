@@ -30,7 +30,7 @@ export default function Homepage({
   });
 
   const [isProcessingData,setIsProcessingData] = useState<boolean>(false);
-  const [googleUserData,setGoogleUserData] = useState<any>(""); // trzeba użwac local storage
+  // const [setGoogleUserData] = useState<any>(""); // trzeba użwac local storage
   const [isGoogleLoggedIn, setIsGoogleLoggedIn] = useState<boolean>(false); // trzeba użwac local storage
 
 
@@ -120,7 +120,7 @@ export default function Homepage({
         .then(response => response.json())
         .then(function(data) {
           console.log("CZY TU JEST TOKEN: " + data); 
-          setGoogleUserData(data);
+          // setGoogleUserData(data);
           setIsGoogleLoggedIn(true)
         });
         // chrome.storage.local.set({ isLogin: true }, function() {
@@ -150,7 +150,7 @@ export default function Homepage({
           })
           .catch(error => console.error('Error revoking token:', error));
 
-        setGoogleUserData(null);
+        // setGoogleUserData(null);
         setIsGoogleLoggedIn(false);
 
         chrome.storage.local.set({ isLogin: false }, function () {
@@ -185,11 +185,6 @@ export default function Homepage({
   return (
     <div className="mainMenu">
       <h2>Meet Capture</h2>
-      {isGoogleLoggedIn ?
-        <div style={{height: "10px",marginBottom: "5px"}}>Logged into google: {googleUserData.name}</div>
-        :
-        null
-      }
       <Button
         className={isProcessingData ? "blocked" : "not-blocked"}
         onClick={() => updateRecording("startRecording")}

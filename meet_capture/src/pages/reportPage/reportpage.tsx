@@ -50,17 +50,19 @@ export default function ReportPage({
       <div style={{ display: "flex", justifyContent: "center", alignItems: "center", flexDirection: "column", minHeight: "100vh" }}>
       {reportsMessage}
       {reports.length > 0 ? (
-        <ul style={{ overflow: "auto", marginTop: "20px", padding: 0, width: "80%" }}>
+        <ul style={{ overflow: "auto", marginTop: "20px", padding: 0, width: "95%" }}>
           {reports.map((report) => (
             <li
               key={report}
+              className="hidden-scroll"
               style={{
                 listStyle: "none",
                 display: "grid", 
-                gridTemplateColumns: "1fr auto", 
+                gridTemplateColumns: "repeat(2, 1fr)",
                 gap: "10px", 
                 alignItems: "center", 
                 marginBottom: "10px",
+                overflowY: "scroll"
               }}
             >
               <div>{report}</div> 
@@ -70,9 +72,11 @@ export default function ReportPage({
                 style={{
                   maxWidth: "100%", 
                   width: "100%", 
-                  height: "40px", 
-                  fontSize: "14px", 
+                  height: "100%", 
+                  fontSize: "8px", 
                   whiteSpace: "nowrap", 
+                  textOverflow: "ellipsis",
+                  overflow: "hidden",
                 }}
               >
                 Download

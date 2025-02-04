@@ -96,6 +96,30 @@ export default function CalendarPage({
     });
   };
 
+  const deleteEvent = (eventId : string) => {
+    chrome.identity.getAuthToken({ interactive: true }, function (token) {
+      if (chrome.runtime.lastError) {
+        console.error("Error getting token:", chrome.runtime.lastError);
+        return;
+      }
+  
+      fetch(`https://www.googleapis.com/calendar/v3/calendars/primary/events/${eventId}`, {
+        method: "DELETE",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      })
+        .then((response) => {
+          if (!response.ok) {
+            throw new Error(`Error deleting event: ${response.statusText}`);
+          }
+          console.log("Event deleted successfully");
+          setEvents((prevEvents) => prevEvents.filter((event) => event.id !== eventId));
+        })
+        .catch((error) => console.error("Error deleting event:", error));
+    });
+  };
+
   
   const handleSelectEvent = (eventId: string, creatorEmail: string) => {
     setSelectedEventId(eventId)  
@@ -104,6 +128,9 @@ export default function CalendarPage({
     });
   };
   
+  const handleEventDelete = (eventId: string) =>{
+    deleteEvent(eventId)
+  }
 
   // Navigate back to home
   const comebackHome = () => {
@@ -200,12 +227,13 @@ export default function CalendarPage({
             }}
           >
             {events.map((event, index) => (
+              <>
               <div
                 style={{
                   display: "grid",
-                  gridTemplateColumns: "repeat(2, 1fr)",
+                  gridTemplateColumns: "repeat(4, 1fr)",
                   gap: "16px",
-                  backgroundColor: selectedEventId === event.id ? "#ffcc00" : "#2de1b1", 
+                  backgroundColor: selectedEventId === event.id ? "#ffcc00" : "#2de1b1",
                   marginTop: "4px",
                   marginBottom: "4px",
                   width: "80%",
@@ -213,13 +241,12 @@ export default function CalendarPage({
                   cursor: "pointer",
                 }}
                 key={index}
-                onClick={() => handleSelectEvent(event.id, event.creator?.email || "")}
               >
                 <p
                   style={{
                     marginRight: "4px",
                     fontWeight: "bold",
-                    textOverflow: "ellipsis",
+                    textOverflow: "ellipsis", 
                     overflow: "hidden",
                     whiteSpace: "nowrap",
                     maxWidth: "100%",
@@ -231,7 +258,14 @@ export default function CalendarPage({
                 <p style={{ marginRight: "4px" }}>
                   {new Date(event.start.dateTime).toLocaleString()}
                 </p>
+                <div style={{display: "flex"}} onClick={() => handleEventDelete(event.id)}>
+                  Delete
+                </div>
+                <div style={{display: "flex", fontSize: "7px"}} onClick={() => handleSelectEvent(event.id, event.creator?.email || "")}>
+                  Attach to Event
+                </div>
               </div>
+              </>
             ))}
           </ul>
         </div>
