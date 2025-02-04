@@ -71,7 +71,7 @@ def process_video():
     with open('text.md', 'a', encoding='utf-8') as f:
         for segment in text["segments"]:
             f.write(f"{segment['start']}-{segment['end']} {segment['speaker']}: {segment['text']}\n")
-            f.write(f"\n{segment['start']}-{segment['end']} {segment['speaker']}: {segment['text']}\n")
+            
 
 
     # Potezna prowizorka

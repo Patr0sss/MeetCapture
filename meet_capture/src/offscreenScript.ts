@@ -117,21 +117,21 @@ async function startRecording(streamId: string) {
       });
     };
 
-    const fetchEventData = async () => {
-      return new Promise<{ eventId: string | undefined, creatorEmail: string | undefined, googleAuthToken: string | undefined }>((resolve, reject) => {
-        chrome.runtime.sendMessage({ action: "fetchEventData" }, (response) => {
-          if (chrome.runtime.lastError) {
-            reject(chrome.runtime.lastError);
-          } else {
-            resolve({
-              eventId: response.eventId,
-              creatorEmail: response.creatorEmail,
-              googleAuthToken: response.googleAuthToken
-            });
-          }
-        });
-      });
-    };
+    // const fetchEventData = async () => {
+    //   return new Promise<{ eventId: string | undefined, creatorEmail: string | undefined, googleAuthToken: string | undefined }>((resolve, reject) => {
+    //     chrome.runtime.sendMessage({ action: "fetchEventData" }, (response) => {
+    //       if (chrome.runtime.lastError) {
+    //         reject(chrome.runtime.lastError);
+    //       } else {
+    //         resolve({
+    //           eventId: response.eventId,
+    //           creatorEmail: response.creatorEmail,
+    //           googleAuthToken: response.googleAuthToken
+    //         });
+    //      }
+    //    });
+    //  });
+    //};
 
     
 
@@ -153,25 +153,25 @@ async function startRecording(streamId: string) {
         return;
       }
 
-      try {
+      // try {
         // Fetch eventId and creatorEmail from the background script
-        const { eventId, creatorEmail, googleAuthToken } = await fetchEventData();
+        //const { eventId, creatorEmail, googleAuthToken } = await fetchEventData();
       
-        if (!eventId || !creatorEmail || !googleAuthToken) {
-          console.error("Event ID or creator email not found.");
-          return;
-        }
+        // if (!eventId || !creatorEmail || !googleAuthToken) {
+        //console.error("Event ID or creator email not found.");
+        //return;
+        //}
       
 
         // Append eventId and creatorEmail to the formData
-        formData.append("eventId", eventId);
-        formData.append("creatorEmail", creatorEmail);
-        formData.append("googleAuthToken", googleAuthToken);
+        // formData.append("eventId", eventId);
+        // formData.append("creatorEmail", creatorEmail);
+        // formData.append("googleAuthToken", googleAuthToken);
         
-      }catch (err) {
-        console.error("Error fetching eventData:", err);
-        return;
-      }
+      //}catch (err) {
+        //console.error("Error fetching eventData:", err);
+        //return;
+      //}
 
       try {
 

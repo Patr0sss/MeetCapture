@@ -9,7 +9,7 @@ def speech_to_text(audio_file):
 
     device = "cuda" 
 
-    batch_size = 6 # reduce if low on GPU mem
+    batch_size = 4 # reduce if low on GPU mem
     compute_type = "float16" # change to "int8" if low on GPU mem (may reduce accuracy)
 
     # 1. Transcribe with original whisper (batched)
