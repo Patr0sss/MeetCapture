@@ -5,7 +5,7 @@ from flask import Blueprint, json, request, jsonify, send_file
 from flask_cors import CORS
 from flask_api.ocr.ocr_run import ocr_run
 from flask_api.ocr.moduls import process_output
-# from flask_api.transcript.whisperx_transcript import speech_to_text
+from flask_api.transcript.whisperx_transcript import speech_to_text
 from .utils.sort_text import sorting_timestamps
 from .utils.clear_photos_folder import clear_photos_folder
 from .utils.clear_croped_photos_folder import clear_croped_photos_folder
@@ -48,6 +48,13 @@ def process_video():
     # Save the uploaded video
     video_path = os.path.join(UPLOAD_FOLDER, 'recording.mp4')
     video.save(video_path)
+    text = speech_to_text(video_path)
+
+    with open('text.md', 'a', encoding='utf-8') as f:
+        for segment in text["segments"]:
+            f.write(f"{segment['start']}-{segment['end']} {segment['speaker']}: {segment['text']}\n")
+            f.write(f"\n{segment['start']}-{segment['end']} {segment['speaker']}: {segment['text']}\n")
+
 
     # Potezna prowizorka
     dic_whisper = {}
