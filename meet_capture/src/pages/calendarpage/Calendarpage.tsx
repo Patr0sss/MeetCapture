@@ -1,7 +1,7 @@
 import { Dispatch, SetStateAction, useEffect, useState } from "react";
 import { Page } from "../../App";
 import { IoMdArrowForward } from "react-icons/io";
-
+import Button from "@mui/material/Button";
 export default function CalendarPage({
   setCurrentPage,
 }: {
@@ -156,52 +156,46 @@ export default function CalendarPage({
       </div>
 
       <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: "16px" }}>
-        <div style={{ backgroundColor: "#7c4dff", borderRadius: "4px", height: "300px" }}>
+        <div style={{ border: "2px solid black", borderRadius: "4px", height: "300px" }}>
           <h5>Create New Event</h5>
           <input
             type="text"
             placeholder="Event Title"
             value={eventTitle}
             onChange={(e) => setEventTitle(e.target.value)}
-            style={{ width: "80%", marginBottom: "8px" }}
+            style={{ width: "80%", marginBottom: "8px", fontFamily: "Arial" }}
           />
           <textarea
             placeholder="Event Description"
             value={eventDescription}
             onChange={(e) => setEventDescription(e.target.value)}
-            style={{ width: "80%", marginBottom: "8px" }}
+            style={{ width: "80%", marginBottom: "8px", fontFamily: "Arial" }}
           />
           <input
             type="datetime-local"
             value={eventStartTime}
             onChange={(e) => setEventStartTime(e.target.value)}
-            style={{ width: "80%", marginBottom: "8px" }}
+            style={{ width: "80%", marginBottom: "8px", fontFamily: "Arial" }}
           />
           <input
             type="datetime-local"
             value={eventEndTime}
             onChange={(e) => setEventEndTime(e.target.value)}
-            style={{ width: "80%", marginBottom: "8px" }}
+            style={{ width: "80%", marginBottom: "8px", fontFamily: "Arial" }}
           />
           <input
             type="text"
             placeholder="Invite Emails (comma separated)"
             value={inviteEmails}
             onChange={(e) => setInviteEmails(e.target.value)}
-            style={{ width: "80%", marginBottom: "8px" }}
+            style={{ width: "80%", marginBottom: "8px", fontFamily: "Arial" }}
           />
-          <button
-            onClick={createEvent}
-            style={{
-              padding: "10px",
-              width: "80%",
-              backgroundColor: "#6200ea",
-              color: "white",
-              borderRadius: "3px",
-            }}
+          <Button
+            onClick={createEvent} variant="contained"
+            
           >
             Create Event
-          </button>
+          </Button>
         </div>
 
         <div
