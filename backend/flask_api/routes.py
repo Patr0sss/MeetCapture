@@ -10,10 +10,11 @@ import threading
 from flask import Blueprint, json, request, jsonify, send_file
 from flask_cors import CORS
 from google.oauth2.credentials import Credentials
+from groq import Groq
 import requests
 from flask_api.ocr.ocr_run import ocr_run
 from flask_api.ocr.moduls import process_output
-from flask_api.transcript.whisperx_transcript import speech_to_text
+# from flask_api.transcript.whisperx_transcript import speech_to_text
 from .utils.sort_text import sorting_timestamps
 from .utils.clear_photos_folder import clear_photos_folder
 from .utils.clear_croped_photos_folder import clear_croped_photos_folder
@@ -66,7 +67,7 @@ def process_video():
     # Save the uploaded video
     video_path = os.path.join(UPLOAD_FOLDER, 'recording.mp4')
     video.save(video_path)
-    text = speech_to_text(video_path)
+    # text = speech_to_text(video_path)
 
     with open('text.md', 'a', encoding='utf-8') as f:
         for segment in text["segments"]:
@@ -94,30 +95,50 @@ def process_video():
 
     # For every timestamp, run the OCR
     dic_ocr = {}
-    futures = []
-    max_workers = calculate_workers(workload_type='mixed', safety_margin=2)
+    # futures = []
+    # max_workers = calculate_workers(workload_type='mixed', safety_margin=2)
     # Use a thread pool with a maximum of 3 threads
-    with ThreadPoolExecutor(max_workers) as executor:
-        # Submit tasks to the thread pool
-        for timestamp in timestamps:
-            future = executor.submit(process_timestamp, timestamp, video_path)
-            futures.append(future)
+    # with ThreadPoolExecutor(max_workers) as executor:
+    #     # Submit tasks to the thread pool
+    #     for timestamp in timestamps:
+    #         future = executor.submit(process_timestamp, timestamp, video_path)
+    #         futures.append(future)
 
-        # Collect results as they complete
-        for future in as_completed(futures):
-            timestamp, result = future.result()
-            if isinstance(result, dict) and 'error' in result:
-                return jsonify({'error': f'Error processing timestamp {timestamp}: {result["error"]}'}), 500
-            is_graph_result, text = result
-            dic_ocr[timestamp] = text  # Store the result in dic_ocr
+    #     # Collect results as they complete
+    #     for future in as_completed(futures):
+    #         timestamp, result = future.result()
+    #         if isinstance(result, dict) and 'error' in result:
+    #             return jsonify({'error': f'Error processing timestamp {timestamp}: {result["error"]}'}), 500
+    #         is_graph_result, text = result
+    #         dic_ocr[timestamp] = text  # Store the result in dic_ocr
 
     # Generate notes text
     notes_text = sorting_timestamps(timestamps, timestamp_from_whisper, dic_ocr, dic_whisper)
     print("Finished notes: ", notes_text)
 
+    client = Groq(
+        api_key=os.environ.get("GROQ_API_KEY"),
+    )
+
+    chat_completion = client.chat.completions.create(
+        messages=[
+            {
+                "role": "user",
+                "content": f"summarize what the conversation is about: {notes_text}"
+
+            }
+        ],
+        model="llama-3.3-70b-versatile",
+        temperature=1,
+        max_tokens=1024,
+        top_p=1,
+        stream=False,
+        stop=None,
+    )
+
     # Write notes to the file
     with open('notes.md', 'w', encoding='utf-8') as f:
-        f.write(notes_text)
+        f.write(chat_completion.choices[0].message.content)
 
     # Use ready markdown file to create PDF
     current_date_time = datetime.now()
